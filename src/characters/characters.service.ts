@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Character } from '@prisma/client'
+import { CreateCharacterDto } from './dtos/create-character.dto';
+import { UpdateCharacterDto } from './dtos/update-character.dto';
 
 @Injectable()
 export class CharactersService {
@@ -21,18 +23,43 @@ export class CharactersService {
         if(character) character;
     }
 
-    async addNewCharacter(character: Character): Promise<Character> {
+    async addNewCharacter(createCharacterDto: CreateCharacterDto): Promise<Character> {
+        const {name, defence, hitPoints, intelligence, strength} = createCharacterDto;
         return this.prisma.character.create({
             data: {
-                name: character.name,
-                defence: character.defence,
-                hitPoints: character.hitPoints,
-                intelligence: character.intelligence,
-                class: character.class,
-                strength: character.strength,
-                // User: {
-                //     connect: { id: character.userId}
-                // }
+                name,
+                defence,
+                hitPoints,
+                intelligence,
+                strength,
+                class: createCharacterDto.class,
+                User: {
+                    connect: { id: createCharacterDto.userId}
+                }
+            }
+        })
+    }
+
+    async updateCharacter(id: string, updateCharacterDto: UpdateCharacterDto): Promise<Character> {
+        const {name, defence, hitPoints, intelligence, strength} = updateCharacterDto;
+
+        const character = this.prisma.character.findUnique({
+            where: {
+                id: Number(id)
+            }
+        })
+
+        if(!character) new NotFoundException(`Character with the id ${id} was not found!`);
+
+        return this.prisma.character.update({
+            where: { id: Number(id)},
+            data: {
+                name,
+                defence,
+                hitPoints,
+                intelligence,
+                strength,
+                class: updateCharacterDto.class,
             }
         })
     }

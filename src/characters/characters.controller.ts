@@ -1,7 +1,12 @@
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Put } from '@nestjs/common/decorators/http/request-mapping.decorator';
+import { ApiTags } from '@nestjs/swagger';
 import { Character } from '@prisma/client';
 import { CharactersService } from './characters.service';
+import { CreateCharacterDto } from './dtos/create-character.dto';
+import { UpdateCharacterDto } from './dtos/update-character.dto';
 
+@ApiTags('characters')
 @Controller('characters')
 export class CharactersController {
     constructor(private readonly charactersService: CharactersService) {}
@@ -16,9 +21,14 @@ export class CharactersController {
         return this.charactersService.getCharacterById(id);
     }
 
+    @Put("/:id")
+    updateCharacter(@Param("id") id: string, updateCharacterDto:UpdateCharacterDto) {
+        return this.charactersService.updateCharacter(id, updateCharacterDto);
+    }
+
     @Post()
-    createNewCharacter(@Body() characterData: Character) {
-        return this.charactersService.addNewCharacter(characterData);
+    createNewCharacter(@Body() createCharacterDto: CreateCharacterDto) {
+        return this.charactersService.addNewCharacter(createCharacterDto);
     }
 
     @Delete("/:id")
