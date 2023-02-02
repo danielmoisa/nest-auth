@@ -1,27 +1,24 @@
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaClient } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
+import { CharactersController } from './characters.controller';
+import { CharactersService } from './characters.service';
 
-describe('AuthController', () => {
-  let controller: AuthController;
-  let service: AuthService;
+describe('CharactersController', () => {
+  let controller: CharactersController;
+  let service: CharactersService;
   let prisma: DeepMockProxy<PrismaClient>;
-
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [AuthController],
-      providers: [AuthService, JwtService, ConfigService, PrismaService],
+      controllers: [CharactersController],
+      providers: [CharactersService, PrismaService]
     }).overrideProvider(PrismaService)
     .useValue(mockDeep<PrismaClient>()).compile();
 
-    controller = module.get<AuthController>(AuthController);
-    service = module.get<AuthService>(AuthService);
+    controller = module.get<CharactersController>(CharactersController);
+    service = module.get<CharactersService>(CharactersService);
     prisma = module.get(PrismaService);
   });
 
