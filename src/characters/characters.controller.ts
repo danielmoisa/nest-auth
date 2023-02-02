@@ -1,12 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { Put } from '@nestjs/common/decorators/http/request-mapping.decorator';
 import { ApiTags } from '@nestjs/swagger';
-import { Character } from '@prisma/client';
+import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { CharactersService } from './characters.service';
 import { CreateCharacterDto } from './dtos/create-character.dto';
 import { UpdateCharacterDto } from './dtos/update-character.dto';
 
 @ApiTags('characters')
+@UseGuards(JwtGuard)
 @Controller('characters')
 export class CharactersController {
     constructor(private readonly charactersService: CharactersService) {}
