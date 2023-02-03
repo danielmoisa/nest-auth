@@ -7,16 +7,20 @@ import { ForbiddenException } from '@nestjs/common/exceptions';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
-    private jwt: JwtService,
-    private config: ConfigService,
+    private readonly prisma: PrismaService,
+    private readonly jwt: JwtService,
+    private readonly config: ConfigService,
+    private readonly mailService: MailService
   ) {}
 
   async register(dto: RegisterDto) {
+    const token = Math.floor(1000 + Math.random() * 9000).toString();
+
     try {
       // Generate password
       const hash = await argon.hash(dto.hash);
@@ -36,6 +40,8 @@ export class AuthService {
           lastName: true,
         },
       });
+
+      await this.mailService.sendUserConfirmation(user, token);
 
       return this.signToken(user.id, user.email);
     } catch (error) {
