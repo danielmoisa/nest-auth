@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -16,5 +16,12 @@ export class AuthController {
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Get("confirm-email")
+  async confirmEmail(@Query("token") token: string) {
+    const email = await this.authService.decodeConfirmationToken(token);
+
+    return this.authService.confirmEmail(email);
   }
 }

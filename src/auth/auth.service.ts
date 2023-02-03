@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
-import { ForbiddenException } from '@nestjs/common/exceptions';
+import { BadRequestException, ForbiddenException } from '@nestjs/common/exceptions';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -19,8 +19,6 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const token = Math.floor(1000 + Math.random() * 9000).toString();
-
     try {
       // Generate password
       const hash = await argon.hash(dto.hash);
@@ -41,7 +39,17 @@ export class AuthService {
         },
       });
 
-      await this.mailService.sendUserConfirmation(user, token);
+      // Generate uniquen token for email verify
+      const token = this.jwt.sign(user.email, {
+        secret: this.config.get('JWT_VERIFICATION_TOKEN_SECRET'),
+        // expiresIn: `${this.config.get('JWT_VERIFICATION_TOKEN_EXPIRATION_TIME')}`
+      });
+
+      //Generate confirmation url
+      const url = `${this.config.get('EMAIL_CONFIRMATION_URL')}?token=${token}`;
+
+      // Send confiramtion email for the new registered user
+      await this.mailService.sendUserConfirmationEmail(user, token, url);
 
       return this.signToken(user.id, user.email);
     } catch (error) {
@@ -91,4 +99,47 @@ export class AuthService {
       access_token: token,
     };
   }
+
+  async confirmEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email
+      }
+    });
+    
+    if (user?.emailIsVerified) {
+      throw new BadRequestException('Email already confirmed');
+    }
+
+    if(user) {
+      await this.prisma.user.update({
+        where: {
+          email
+        },
+        data: {
+          emailIsVerified: true
+        }
+      })
+    }
+  }
+
+  async decodeConfirmationToken(token: string) {
+    try {
+      const payload = await this.jwt.verify(token, {
+        secret: this.config.get('JWT_VERIFICATION_TOKEN_SECRET'),
+      });
+ 
+      if (payload) {
+        return payload;
+      }
+      throw new BadRequestException();
+    } catch (error) {
+      if (error?.name === 'TokenExpiredError') {
+        throw new BadRequestException('Email confirmation token expired');
+      }
+      throw new BadRequestException('Bad confirmation token');
+    }
+  }
 }
+
+
