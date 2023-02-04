@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { Put } from '@nestjs/common/decorators/http/request-mapping.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from '../auth/guard/jwt.guard';
@@ -18,12 +18,12 @@ export class CharactersController {
     }
 
     @Get("/:id")
-    getCharacterById(@Param("id") id: string) {
+    getCharacterById(@Param("id", ParseIntPipe) id: string) {
         return this.charactersService.getCharacterById(id);
     }
 
     @Put("/:id")
-    updateCharacter(@Param("id") id: string, updateCharacterDto:UpdateCharacterDto) {
+    updateCharacter(@Param("id", ParseIntPipe) id: string, updateCharacterDto:UpdateCharacterDto) {
         return this.charactersService.updateCharacter(id, updateCharacterDto);
     }
 
@@ -33,7 +33,7 @@ export class CharactersController {
     }
 
     @Delete("/:id")
-    deleteCharacter(@Param("id") id: string) {
+    deleteCharacter(@Param("id", ParseIntPipe) id: string) {
         return this.charactersService.deleteCharacter(id);
     }
 }

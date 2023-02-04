@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { GetUser } from '../auth/decorator/get-user.decorator';
@@ -29,12 +29,12 @@ export class UsersController {
   }
 
   @Put("/:id")
-  updateUser(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
+  updateUser(@Param("id", ParseIntPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.updateUser(id, updateUserDto);
   }
 
   @Delete()
-  deleteUser(@Param("id") id: string) {
+  deleteUser(@Param("id", ParseIntPipe) id: string) {
     return this.usersService.deleteUser(id);
   }
 }
