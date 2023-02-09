@@ -42,6 +42,7 @@ export class AuthService {
       // Generate uniquen token for email verify
       const token = this.jwt.sign(user.email, {
         secret: this.config.get('JWT_VERIFICATION_TOKEN_SECRET'),
+        expiresIn: '15m',
         // expiresIn: `${this.config.get('JWT_VERIFICATION_TOKEN_EXPIRATION_TIME')}`
       });
 
